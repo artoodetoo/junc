@@ -52,6 +52,9 @@ switch ($routeInfo[0]) {
         break;
 }
 ```
+*Note*:  
+$routeInfo[1] is not a string. It's array with at least one required key 'do'.  
+$routeInfo[2] is assotiative array of route variables ('id' & so on.)
 
 ### Example 2. Deep hierarchy with extra attribute (which inherits to all sub-routes):
 
@@ -75,7 +78,7 @@ $map = [
 ### Example 3. Different methods:
 
 ```php
-$map =[
+$map = [
     '/' => 'index',
     '/post/{id:\d+}' => [
         ['on' => 'GET',  'do' => 'read_post'], 
