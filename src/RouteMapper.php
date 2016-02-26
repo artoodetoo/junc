@@ -1,40 +1,4 @@
 <?php
-/*
- * RouteMapper utilized obvious route map.
- * Examples of map:
- *
- * // Only GET. Flat structure.
- * [
- *      '/'           => 'index',
- *      '/forum/{id}' => 'view_forums', 
- *      '/topic/{id}' => 'view_topic',
- * ]
- * 
- * // GET & POST.
- * [
- *      '/' => 'index',
- *      '/post/{id}' => [
- *          ['on' => 'GET',  'do' => 'read_post'], 
- *          ['on' => 'POST', 'do' => 'write_post'], 
- *      ],
- * ]
- * 
- * // Hierarchy with extra attribute (which inherits).
- * [
- *      '/'           => 'index',
- *      '/forum/{id}' => 'view_forums', 
- *      '/admin'      => [
- *          'allow' => 'ROLE_ADMIN',
- *          '/'        => 'admin_dashboard',
- *          '/updates' => 'admin_updates',
- *          '/users'   => [
- *              '/'    => 'admin_user_list',
- *              '/new' => 'admin_user_new',
- *          ],
- *      ],
- * ]
- * 
- */
 
 namespace R2\Junc;
 
@@ -50,7 +14,7 @@ class RouteMapper {
      * @param mixed $routes
      */
     public function __construct($map) {
-        $this->map = map;
+        $this->map = $map;
     }
 
     /**
@@ -100,7 +64,7 @@ class RouteMapper {
                 if (is_array($v)) {
                     $result = array_replace_recursive(
                         $result,
-                        flatten($v, $prefix.$k, $bag)
+                        $this->flatten($v, $prefix.$k, $bag)
                     );
                 } else {
                     $this->add($result, $prefix.$k, ['do' => $v] + $bag);
@@ -108,7 +72,7 @@ class RouteMapper {
             } elseif (is_numeric($k) && is_array($v)) {
                 $result = array_replace_recursive(
                     $result,
-                    flatten($v, $prefix, $bag)
+                    $this->flatten($v, $prefix, $bag)
                 );
             } elseif ($k === 'do') {
                 $this->add($result, $prefix, ['do' => $v] + $bag);
@@ -119,6 +83,13 @@ class RouteMapper {
         return $result;
     }
 
+    /**
+     * Add item to temporary route list.
+     *
+     * @param array  &$result
+     * @param string  $key
+     * @param array   $value
+     */
     private function add(array &$result, $key, array $value)
     {
         $method = $value['on'];
