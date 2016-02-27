@@ -61,7 +61,7 @@ $routeInfo[2] is assotiative array of route variables ('id' & so on.)
 ```php
 $map = [
     '/'                 => 'index',
-    '/forum/{id}'       => 'view_forums', 
+    '/forum/{id:\d+}'   => 'view_forums', 
     '/admin' => [
         'allow' => 'ROLE_ADMIN',
         '/'             => 'admin_dashboard',

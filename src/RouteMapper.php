@@ -41,16 +41,14 @@ class RouteMapper {
         $this->collector = $collector;
 
         $flat = $this->flatten($this->map, '', ['on' => 'GET']);
-        foreach ($flat as $method => $routes) {
-            foreach ($routes as $route => $bag) {
-                $this->collector->addRoute($method, $route, $bag);
-            }
+        foreach ($flat as $row) {
+            $this->collector->addRoute($row[0], $row[1], $row[2]);
         }
     }
 
     /**
      * Convert hierarchical tree with attribute inheritance to array like
-     * [ method => [ route => bag, ... ], ...]
+     * [ [method, route, answer], ...]
      *
      * @param array  $nested
      * @param string $prefix
@@ -62,7 +60,7 @@ class RouteMapper {
         foreach ($nested as $k => $v) {
             if ($k{0} === '/') {
                 if (is_array($v)) {
-                    $result = array_replace_recursive(
+                    $result = array_merge(
                         $result,
                         $this->flatten($v, $prefix.$k, $bag)
                     );
@@ -70,7 +68,7 @@ class RouteMapper {
                     $this->add($result, $prefix.$k, ['do' => $v] + $bag);
                 }
             } elseif (is_numeric($k) && is_array($v)) {
-                $result = array_replace_recursive(
+                $result = array_merge(
                     $result,
                     $this->flatten($v, $prefix, $bag)
                 );
@@ -94,6 +92,6 @@ class RouteMapper {
     {
         $method = $value['on'];
         unset($value['on']);
-        $result[$method][$key] = $value;
+        $result[] = [$method, $key, $value];
     }
 }
