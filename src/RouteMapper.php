@@ -6,7 +6,7 @@ use FastRoute\RouteCollector;
 
 class RouteMapper {
     private $map;
-    private $collector;
+    private $routes;
 
     /**
      * Constructs a map.
@@ -38,17 +38,18 @@ class RouteMapper {
         if (!is_array($this->map)) {
             $this->map = require($this->map);
         }
-        $this->collector = $collector;
-
-        $flat = $this->flatten($this->map, '', ['on' => 'GET']);
-        foreach ($flat as $row) {
-            $this->collector->addRoute($row[0], $row[1], $row[2]);
+        if (!isset($this->routes)) {
+            $this->routes = [];
+            $this->flatten($this->map, '', ['on' => 'GET']);
+        }
+        foreach ($this->routes as $row) {
+            $collector->addRoute($row[0], $row[1], $row[2]);
         }
     }
 
     /**
      * Convert hierarchical tree with attribute inheritance to array like
-     * [ [method, route, answer], ...]
+     * [ [method, route, value], ...]
      *
      * @param array  $nested
      * @param string $prefix
@@ -56,42 +57,33 @@ class RouteMapper {
      */
     private function flatten(array $nested, $prefix = '', array $bag = [])
     {
-        $result = [];
         foreach ($nested as $k => $v) {
             if ($k{0} === '/') {
                 if (is_array($v)) {
-                    $result = array_merge(
-                        $result,
-                        $this->flatten($v, $prefix.$k, $bag)
-                    );
+                    $this->flatten($v, $prefix.$k, $bag);
                 } else {
-                    $this->add($result, $prefix.$k, ['do' => $v] + $bag);
+                    $this->add($prefix.$k, ['do' => $v] + $bag);
                 }
             } elseif (is_numeric($k) && is_array($v)) {
-                $result = array_merge(
-                    $result,
-                    $this->flatten($v, $prefix, $bag)
-                );
+                $this->flatten($v, $prefix, $bag);
             } elseif ($k === 'do') {
-                $this->add($result, $prefix, ['do' => $v] + $bag);
+                $this->add($prefix, ['do' => $v] + $bag);
             } else {
                 $bag[$k] = $v;
             }
         }
-        return $result;
     }
 
     /**
      * Add item to temporary route list.
      *
-     * @param array  &$result
      * @param string  $key
      * @param array   $value
      */
-    private function add(array &$result, $key, array $value)
+    private function add($key, array $value)
     {
         $method = $value['on'];
         unset($value['on']);
-        $result[] = [$method, $key, $value];
+        $this->routes[] = [$method, $key, $value];
     }
 }
