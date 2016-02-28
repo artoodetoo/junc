@@ -34,17 +34,50 @@ class RouteMapper {
      */
     public function map(RouteCollector $collector)
     {
-        // Route map is array or PHP filename returning array
-        if (!is_array($this->map)) {
-            $this->map = require($this->map);
+        foreach ($this->getRoutes() as $row) {
+            $collector->addRoute($row[0], $row[1], $row[2]);
         }
+    }
+
+    /**
+     * It's very begining and dirty URL builder.
+     *
+     * @param string $name
+     * @param array  $vars
+     */
+    public function pathFor($name, array $vars = null)
+    {
+        $pattern = false;
+        foreach ($this->getRoutes() as $row) {
+            if ($row[2]['do'] === $name) {
+                $pattern = $row[1];
+                break;
+            }
+        }
+        if ($pattern && $vars) {
+            foreach ($vars as $k => $v) {
+                $pattern = preg_replace('~\{'.$k.'[^}]*\}~', $v, $pattern);
+            }
+        }
+        return $pattern;
+    }
+
+    /**
+     * Lazy route mapping
+     *
+     * @return &array
+     */
+    private function &getRoutes()
+    {
         if (!isset($this->routes)) {
+            // Route map is array or PHP filename returning array
+            if (!is_array($this->map)) {
+                $this->map = require($this->map);
+            }
             $this->routes = [];
             $this->flatten($this->map, '', ['on' => 'GET']);
         }
-        foreach ($this->routes as $row) {
-            $collector->addRoute($row[0], $row[1], $row[2]);
-        }
+        return $this->routes;
     }
 
     /**
