@@ -92,10 +92,10 @@ class RouteMapper {
     {
         foreach ($nested as $k => $v) {
             if ($k{0} === '/') {
-                if (is_array($v)) {
-                    $this->flatten($v, $prefix.$k, $bag);
-                } else {
+                if (!is_array($v) || (array_keys($v) === [0, 1] && is_string($v[0]) && is_string($v[1]))) {
                     $this->add($prefix.$k, ['do' => $v] + $bag);
+                } else {
+                    $this->flatten($v, $prefix . $k, $bag);
                 }
             } elseif (is_numeric($k) && is_array($v)) {
                 $this->flatten($v, $prefix, $bag);
