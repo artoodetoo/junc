@@ -1,7 +1,10 @@
 Junc
 ====
 
-Obvious map for [FastRouter](https://github.com/nikic/FastRoute/).
+Junc is the concise way to define routes.
+Route map can be stored in any format, including JSON/YAML/.ini, only there was a way to convert it into an array.
+
+It is not new routing library, but the addon to awesome [FastRouter](https://github.com/nikic/FastRoute/).
 
 Install
 -------
@@ -15,13 +18,15 @@ composer require artoodetoo/junc
 Usage
 -----
 
-Since this package only enhances FastRoute behavior, look at its documentation.
+Since this package only enhances FastRoute behavior, look at FastRoute documentation.
 You have to realize how to use the route dispatcher.
-Then come back here to see the difference in routes.
+Then come back here to see the difference in route definition.
 
 Junc replaces series of FastRoute's $r->addRoute() to one clear (static) roadmap.
 
 ### Example 1. Basic usage:
+
+By default all the routes are for GET method.
 
 ```php
 <?php
@@ -75,14 +80,42 @@ $map = [
 ];
 ```
 
-### Example 3. Different methods:
+Junc is smart enough to distinguish route parts from attributes. 
+All route parts started with slash "/" character. 
 
+
+### Example 3a. Explicit method:
+
+You can define method for certain route.
 ```php
 $map = [
     '/' => 'index',
     '/post/{id:\d+}' => [
         ['on' => 'GET',  'do' => 'read_post'], 
         ['on' => 'POST', 'do' => 'write_post'], 
+    ],
+];
+```
+
+### Example 3b. Implicit method:
+
+Alternatively you can set common method for set of routes.
+```php
+$map = [
+    '/' => 'index',
+    [
+        'on' => 'GET',
+        '/forum/{id:\d+}' => 'view_forum',
+        '/topic/{id:\d+}' => 'view_topic',
+    ],
+    [
+        'on' => 'POST',
+        '/new',
+        [
+            '/forum'   => 'new_forum',
+            '/topic'   => 'new_topic',
+            '/comment' => 'new_comment',
+        ]
     ],
 ];
 ```
