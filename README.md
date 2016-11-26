@@ -131,3 +131,7 @@ $dispatcher = FastRoute\cachedDispatcher(
     ]
 );
 ```
+
+### License
+
+The Junc is open-source software, licensed under the [MIT license](http://opensource.org/licenses/MIT)
